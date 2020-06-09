@@ -12,4 +12,4 @@ pluginManagement {
         }
     }
 }
-rootProject.name = "kotlin-study"
+rootProject.name = "kotlin-spring-boot-study"
