@@ -19,7 +19,11 @@ class SendMessageTask : Runnable {
         if (stopWatch.isRunning) {
             stopWatch.stop()
         }
+
         println("send message : ${stopWatch.totalTimeSeconds}s")
+        println("URL: $url")
+        println("Get method : $getMethod")
+
         stopWatch = StopWatch("sendMessage")
         stopWatch.start()
     }
