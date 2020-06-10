@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="ko">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
@@ -40,6 +40,31 @@
 <!-- Page Content -->
 <div class="container">
     <div class="row">
+        <div class="col-lg-12">
+            <nav class="navbar navbar-light bg-light">
+                <span id="serverStatus" th:if="${serverStatus eq 'RUNNING'}">Status : <span class="badge badge-success">RUNNING</span></span>
+                <span id="serverStatus" th:if="${serverStatus eq 'STOP'}">Status : <span class="badge badge-danger">STOP</span></span>
+                <form id="globalSettingForm" class="form-inline" method="post" action="globalSetting" accept-charset="UTF-8">
+                    <div class="form-group mr-2">
+                        <button class="btn btn-outline-success" type="button" onclick="setInterval()">Apply</button>
+                        <input id="interval" name="interval" class="form-control" style="width:80px;" type="number" min="60" step="10" placeholder="Search" aria-label="Search"
+                               th:value="${interval}">
+                    </div>
+                    <div class="form-group">
+                        <div class="btn-group" role="group" aria-label="On Off">
+                            <button id="onButton" name="onOff" value="ON" type="button" class="btn" th:classappend="${onOff eq 'ON' ? 'btn-success' : 'btn-secondary'}"
+                                    onclick="setOnOff('ON')">ON
+                            </button>
+                            <button id="offButton" name="onOff" value="OFF" type="button" class="btn" th:classappend="${onOff eq 'OFF' ? 'btn-danger' : 'btn-secondary'}"
+                                    onclick="setOnOff('OFF')">OFF
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </nav>
+        </div>
+    </div>
+    <div class="row">
         <div class="col-lg-6 text-center mt-2">
             <div class="card">
                 <div class="card-header">Message setting</div>
@@ -50,7 +75,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Message</span>
                                 </div>
-                                <textarea class="form-control" aria-label="Message" style="height:150px;"></textarea>
+                                <textarea name="message" class="form-control" aria-label="Message" style="height:150px;">[[${countMessage}]]</textarea>
                             </div>
                         </div>
                         <div class="form-group">
@@ -58,10 +83,12 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-count">Count</span>
                                 </div>
-                                <input type="text" class="form-control" aria-label="Count" aria-describedby="basic-count">
+                                <input name="propertyValue" type="text" class="form-control" aria-label="Count" aria-describedby="basic-count" th:value="${countProperty}">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <input name="messageId" type="hidden" th:value="${countMessageId}">
+                        <input name="propertyType" type="hidden" value="COUNT">
+                        <button type="button" class="btn btn-primary" onclick="onSubmitMessageForm(this)">Submit</button>
                     </form>
                 </div>
             </div>
@@ -76,7 +103,7 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text">Message</span>
                                 </div>
-                                <textarea class="form-control" aria-label="Message" style="height:150px;"></textarea>
+                                <textarea name="message" class="form-control" aria-label="Message" style="height:150px;">[[${moneyMessage}]]</textarea>
                             </div>
                         </div>
                         <div class="form-group">
@@ -84,10 +111,12 @@
                                 <div class="input-group-prepend">
                                     <span class="input-group-text" id="basic-money">Money</span>
                                 </div>
-                                <input type="text" class="form-control" aria-label="Count" aria-describedby="basic-money">
+                                <input name="propertyValue" type="text" class="form-control" aria-label="Count" aria-describedby="basic-money" th:value="${moneyProperty}">
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary">Submit</button>
+                        <input name="messageId" type="hidden" th:value="${moneyMessageId}">
+                        <input name="propertyType" type="hidden" value="MONEY">
+                        <button type="button" class="btn btn-primary" onclick="onSubmitMessageForm(this)">Submit</button>
                     </form>
                 </div>
             </div>
@@ -100,17 +129,126 @@
 <script src="/webjars/moment/2.26.0/min/moment-with-locales.min.js"></script>
 <script src="/webjars/lodash/4.17.15/lodash.min.js"></script>
 <script>
-  $.ajax({
-    url: '/message/all',
-    type: 'GET',
-    dataType: 'json',
-    success: (response) => {
+  function changeServerStatus(serverStatus) {
+    console.log('server status')
+    const $serverStatus = $('#serverStatus')
+    const $serverStatusText = $serverStatus.find('.badge')
+    $serverStatusText.text(serverStatus)
+    if (serverStatus === 'RUNNING') {
+      $serverStatusText.removeClass('badge-danger').addClass('badge-success')
+    } else {
+      $serverStatusText.removeClass('badge-success').addClass('badge-danger')
+    }
+  }
+
+  function setInterval() {
+    const $interval = $('#interval')
+    $.ajax({
+      url: 'setting/global/interval',
+      type: 'POST',
+      dataType: 'json',
+      data: JSON.stringify({ interval: $interval.val() }),
+      contentType: 'application/json',
+    }).done((response) => {
       console.log('response', response)
-    },
-    fail: (error) => {
-      console.error('error', error)
-    },
-  })
+      const serverStatus = response.serverStatus
+      changeServerStatus(serverStatus)
+    }).fail((error) => {
+      alert(JSON.stringify(error))
+      console.error('global interval setting error', error)
+    })
+
+    return false
+  }
+
+  function setOnOff(onOff) {
+    $.ajax({
+      url: 'setting/global/onOff',
+      type: 'POST',
+      dataType: 'json',
+      data: JSON.stringify({ onOff }),
+      contentType: 'application/json',
+    }).done((response) => {
+        const serverStatus = response.serverStatus
+        changeServerStatus(serverStatus)
+        const $onButton = $('#onButton')
+        const $offButton = $('#offButton')
+        if (onOff === 'ON') {
+          $onButton.removeClass('btn-secondary').addClass('btn-success')
+          $offButton.removeClass('btn-danger').addClass('btn-secondary')
+        } else if (onOff === 'OFF') {
+          $offButton.removeClass('btn-secondary').addClass('btn-danger')
+          $onButton.removeClass('btn-success').addClass('btn-secondary')
+        }
+      },
+    ).fail((error) => {
+      alert(JSON.stringify(error))
+      console.error('global setting error', error)
+    })
+
+    return false
+  }
+
+  function globalSetting(onOff) {
+    const form = document.querySelector('#globalSettingForm')
+    const interval = form['interval'].value
+    const $onOffValue = $('#onOffValue')
+    if (onOff) {
+      $onOffValue.val(onOff)
+    }
+
+    const onOffValue = $onOffValue.val()
+    console.log('onOffValue', onOffValue)
+    console.log('interval value', interval)
+    $.ajax({
+      url: 'setting/global',
+      type: 'POST',
+      dataType: 'json',
+      data: JSON.stringify({ interval, onOff: onOffValue }),
+      contentType: 'application/json',
+    }).done((response) => {
+        console.log('response', response)
+        const $onButton = $('#onButton')
+        const $offButton = $('#offButton')
+        if (onOffValue === 'ON') {
+          $onButton.removeClass('btn-secondary').addClass('btn-success')
+          $offButton.removeClass('btn-danger').addClass('btn-secondary')
+        } else if (onOffValue === 'OFF') {
+          $offButton.removeClass('btn-secondary').addClass('btn-danger')
+          $onButton.removeClass('btn-success').addClass('btn-secondary')
+        }
+      },
+    ).fail((error) => {
+      alert(JSON.stringify(error))
+      console.error('global setting error', error)
+    })
+    return false
+  }
+
+  function onSubmitMessageForm(buttonElem) {
+    const formElem = $(buttonElem).parent('form')[0]
+    console.log('formElem', formElem)
+    console.log(`onSubmit : Message = ${formElem['message'].value}, Property = ${formElem['propertyValue'].value}, PropertyType = ${formElem['propertyType'].value}`)
+
+    $.ajax({
+      url: 'setting/message',
+      type: 'POST',
+      dataType: 'json',
+      data: JSON.stringify({
+        message: formElem['message'].value,
+        propertyValue: _.replace(formElem['propertyValue'].value, /\s/g, ''),
+        propertyType: _.replace(formElem['propertyType'].value, /\s/g, ''),
+      }),
+      contentType: 'application/json',
+    }).done((response) => {
+      console.log('message setting don', response)
+    }).fail((error) => {
+      console.error('message setting error', error)
+      alert(JSON.stringify(error))
+    })
+
+    return false
+  }
 </script>
 </body>
 </html>
