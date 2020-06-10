@@ -8,7 +8,92 @@
     <link rel="stylesheet" href="/webjars/bootstrap/4.5.0/dist/css/bootstrap.min.css">
 </head>
 <body>
-<h1>Hello world!</h1>
+<!-- Navigation -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark static-top">
+    <div class="container">
+        <a class="navbar-brand" href="#">Start Bootstrap</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarResponsive"
+                aria-controls="navbarResponsive" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarResponsive">
+            <ul class="navbar-nav ml-auto">
+                <li class="nav-item active">
+                    <a class="nav-link" href="#">Home
+                        <span class="sr-only">(current)</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">About</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Services</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="#">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- Page Content -->
+<div class="container">
+    <div class="row">
+        <div class="col-lg-6 text-center mt-2">
+            <div class="card">
+                <div class="card-header">Message setting</div>
+                <div class="card-body">
+                    <form>
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Message</span>
+                                </div>
+                                <textarea class="form-control" aria-label="Message" style="height:150px;"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-count">Count</span>
+                                </div>
+                                <input type="text" class="form-control" aria-label="Count" aria-describedby="basic-count">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 text-center mt-2">
+            <div class="card">
+                <div class="card-header">Message setting</div>
+                <div class="card-body">
+                    <form>
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Message</span>
+                                </div>
+                                <textarea class="form-control" aria-label="Message" style="height:150px;"></textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-money">Money</span>
+                                </div>
+                                <input type="text" class="form-control" aria-label="Count" aria-describedby="basic-money">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 <script src="/webjars/jquery/3.5.1/dist/jquery.min.js"></script>
 <script src="/webjars/popper.js/1.16.1-lts/dist/umd/popper.min.js"></script>
 <script src="/webjars/bootstrap/4.5.0/dist/js/bootstrap.min.js"></script>
@@ -17,7 +102,7 @@
 <script>
   $.ajax({
     url: '/message/all',
-    teyp: 'GET',
+    type: 'GET',
     dataType: 'json',
     success: (response) => {
       console.log('response', response)
