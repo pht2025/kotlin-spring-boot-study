@@ -1,6 +1,5 @@
 package com.pht.kotlinstudy.controller
 
-import com.pht.kotlinstudy.Global
 import com.pht.kotlinstudy.model.GlobalProperty
 import com.pht.kotlinstudy.model.Message
 import com.pht.kotlinstudy.model.Property
@@ -32,16 +31,11 @@ class SettingController(
         if (interval < 10) {
             interval = 30
         }
-        val serverStatus = globalPropertyRepository.findByKey(Global.KEY_SERVER_STATUS).orElse(null)
         val intervalSetting = globalPropertyRepository.findByKey("interval").orElse(GlobalProperty())
-        val onOffSetting = globalPropertyRepository.findByKey("onOff").orElse(GlobalProperty())
 
-        if (!scheduleTaskService.isRunning() || interval.toString() != intervalSetting.value) {
-            if (onOffSetting.value == GlobalProperty.OnOff.ON.name) {
-                scheduleTaskService.startSendMessageTask(Duration.ofSeconds(interval))
-            } else {
-                scheduleTaskService.stopSendMessageTask()
-            }
+        if (scheduleTaskService.isRunning() && interval.toString() != intervalSetting.value) {
+            scheduleTaskService.stopSendMessageTask()
+            scheduleTaskService.startSendMessageTask(Duration.ofSeconds(interval))
         }
 
         if (intervalSetting.id == null) {
@@ -54,24 +48,23 @@ class SettingController(
 
         globalPropertyRepository.save(intervalSetting)
 
-        val serverStatusValue = GlobalProperty.ServerStatus.valueOf(serverStatus.value.toString())
-        return GlobalSettingDto.Response(true, serverStatusValue)
+        val onOff: GlobalProperty.OnOff
+        val serverStatus: GlobalProperty.ServerStatus;
+        if (scheduleTaskService.isRunning()) {
+            serverStatus = GlobalProperty.ServerStatus.RUNNING
+            onOff = GlobalProperty.OnOff.ON
+        } else {
+            serverStatus = GlobalProperty.ServerStatus.STOP
+            onOff = GlobalProperty.OnOff.OFF
+        }
+
+        return GlobalSettingDto.Response(true, serverStatus, onOff)
     }
 
     @PostMapping("global/onOff")
     fun onOffSetting(@RequestBody request: GlobalSettingDto.Request): GlobalSettingDto.Response {
         val onOff = request.onOff
-        val serverStatus = globalPropertyRepository.findByKey(Global.KEY_SERVER_STATUS).orElse(null)
         val intervalSetting = globalPropertyRepository.findByKey("interval").orElse(GlobalProperty())
-        val onOffSetting = globalPropertyRepository.findByKey("onOff").orElse(GlobalProperty())
-
-        if (onOffSetting.id == null) {
-            onOffSetting.key = "onOff"
-            onOffSetting.name = "On Off"
-            onOffSetting.value = Objects.toString(onOff)
-        } else {
-            onOffSetting.value = Objects.toString(onOff)
-        }
 
         val serverStatusValue = if (onOff == GlobalProperty.OnOff.ON) {
             if (!scheduleTaskService.isRunning()) {
@@ -89,12 +82,8 @@ class SettingController(
         }
 
         globalPropertyRepository.save(intervalSetting)
-        globalPropertyRepository.save(onOffSetting)
 
-        serverStatus.value = serverStatusValue.toString()
-        globalPropertyRepository.save(serverStatus)
-
-        return GlobalSettingDto.Response(true, serverStatusValue)
+        return GlobalSettingDto.Response(true, serverStatusValue, onOff)
     }
 
     @PostMapping("message")

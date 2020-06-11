@@ -189,42 +189,6 @@
     return false
   }
 
-  function globalSetting(onOff) {
-    const form = document.querySelector('#globalSettingForm')
-    const interval = form['interval'].value
-    const $onOffValue = $('#onOffValue')
-    if (onOff) {
-      $onOffValue.val(onOff)
-    }
-
-    const onOffValue = $onOffValue.val()
-    console.log('onOffValue', onOffValue)
-    console.log('interval value', interval)
-    $.ajax({
-      url: 'setting/global',
-      type: 'POST',
-      dataType: 'json',
-      data: JSON.stringify({ interval, onOff: onOffValue }),
-      contentType: 'application/json',
-    }).done((response) => {
-        console.log('response', response)
-        const $onButton = $('#onButton')
-        const $offButton = $('#offButton')
-        if (onOffValue === 'ON') {
-          $onButton.removeClass('btn-secondary').addClass('btn-success')
-          $offButton.removeClass('btn-danger').addClass('btn-secondary')
-        } else if (onOffValue === 'OFF') {
-          $offButton.removeClass('btn-secondary').addClass('btn-danger')
-          $onButton.removeClass('btn-success').addClass('btn-secondary')
-        }
-      },
-    ).fail((error) => {
-      alert(JSON.stringify(error))
-      console.error('global setting error', error)
-    })
-    return false
-  }
-
   function onSubmitMessageForm(buttonElem) {
     const formElem = $(buttonElem).parent('form')[0]
     console.log('formElem', formElem)

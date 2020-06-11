@@ -12,7 +12,6 @@ import org.springframework.boot.context.event.ApplicationStartedEvent
 import org.springframework.context.ApplicationListener
 import org.springframework.stereotype.Component
 import java.time.Duration
-import java.util.concurrent.ScheduledFuture
 
 @Component
 class ApplicationEventListener(
@@ -21,12 +20,8 @@ class ApplicationEventListener(
         val scheduleTaskService: ScheduleTaskService
 ) : ApplicationListener<ApplicationStartedEvent> {
 
-    lateinit var scheduleAtFixedRate: ScheduledFuture<*>
-
     override fun onApplicationEvent(event: ApplicationStartedEvent) {
         var interval = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(null)
-        var serverStatus = globalPropertyRepository.findByKey(Global.KEY_SERVER_STATUS).orElse(null)
-        var onOff = globalPropertyRepository.findByKey(Global.KEY_ON_OFF).orElse(null)
         var countMessage = messageRepository.findByKey(PropertyType.COUNT.name).orElse(null)
         var moneyMessage = messageRepository.findByKey(PropertyType.MONEY.name).orElse(null)
 
@@ -36,22 +31,6 @@ class ApplicationEventListener(
             intervalProperty.name = Global.KEY_INTERVAL
             intervalProperty.value = "60"
             interval = globalPropertyRepository.save(intervalProperty)
-        }
-
-        if (serverStatus == null) {
-            val serverStatusProperty = GlobalProperty()
-            serverStatusProperty.key = Global.KEY_SERVER_STATUS
-            serverStatusProperty.name = Global.KEY_SERVER_STATUS
-            serverStatusProperty.value = GlobalProperty.ServerStatus.STOP.toString()
-            serverStatus = globalPropertyRepository.save(serverStatusProperty)
-        }
-
-        if (onOff == null) {
-            val onOffProperty = GlobalProperty()
-            onOffProperty.key = Global.KEY_ON_OFF
-            onOffProperty.name = Global.KEY_ON_OFF
-            onOffProperty.value = GlobalProperty.OnOff.OFF.toString()
-            onOff = globalPropertyRepository.save(onOffProperty)
         }
 
         if (countMessage == null) {
@@ -83,10 +62,6 @@ class ApplicationEventListener(
             messageRepository.save(moneyMessage)
         }
 
-        if (onOff.value == GlobalProperty.OnOff.ON.name) {
-            scheduleTaskService.startSendMessageTask(Duration.ofSeconds(interval.value?.toLong()!!))
-        } else {
-            scheduleTaskService.stopSendMessageTask()
-        }
+        scheduleTaskService.startSendMessageTask(Duration.ofSeconds(interval.value?.toLong()!!))
     }
 }
