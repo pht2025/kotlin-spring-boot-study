@@ -7,7 +7,7 @@ import org.springframework.util.StopWatch
 
 class SendMessageTask(private val messageRepository: MessageRepository, val restTemplateBuilder: RestTemplateBuilder) : Runnable {
 
-    private val url: String = "https://api.adventurer.co.kr"
+    private val url: String = "https://v2-api.adventurer.co.kr"
     private val getMethod: String = "bettings"
     private val sendMethod: String = "sendMessages"
 
@@ -30,7 +30,10 @@ class SendMessageTask(private val messageRepository: MessageRepository, val rest
         println("URL: $url")
         println("Get method : $getMethod")
         println("Count message : ${countMessage.get().message}")
+        println("Count message title : ${countMessage.get().title}")
         println("Count property : ${countMessage.get().properties[0].value}")
+
+        println("Count message title : ${moneyMessage.get().title}")
         println("Money message : ${moneyMessage.get().message}")
         println("Money property : ${moneyMessage.get().properties[0].value}")
 

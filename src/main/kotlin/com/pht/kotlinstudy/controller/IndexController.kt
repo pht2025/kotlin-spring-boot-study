@@ -22,7 +22,9 @@ class IndexController(
 
     @GetMapping("/")
     fun index(modelAndView: ModelAndView): Mono<ModelAndView> {
-        val interval = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(null)
+        val interval = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(GlobalProperty())
+        val senderId = globalPropertyRepository.findByKey(Global.KEY_SENDER_ID).orElse(GlobalProperty())
+        val accessToken = globalPropertyRepository.findByKey(Global.KEY_ACCESS_TOKEN).orElse(GlobalProperty())
         val countMessage = messageRepository.findByKey(PropertyType.COUNT.name).orElse(Message())
         val moneyMessage = messageRepository.findByKey(PropertyType.MONEY.name).orElse(Message())
         val countProperty = if (countMessage.properties.isEmpty()) {
@@ -51,8 +53,15 @@ class IndexController(
         modelAndView.addObject("serverStatus", serverStatus.name)
         modelAndView.addObject("interval", interval.value)
         modelAndView.addObject("onOff", onOff.name)
+        modelAndView.addObject("senderId", senderId.value)
+        modelAndView.addObject("accessToken", accessToken.value)
+
+
         modelAndView.addObject("countMessageId", countMessage.id)
         modelAndView.addObject("moneyMessageId", moneyMessage.id)
+
+        modelAndView.addObject("countMessageTitle", countMessage.title)
+        modelAndView.addObject("moneyMessageTitle", moneyMessage.title)
 
         modelAndView.addObject("countMessage", countMessage.message)
         modelAndView.addObject("moneyMessage", moneyMessage.message)

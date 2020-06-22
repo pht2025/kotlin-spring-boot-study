@@ -1,5 +1,6 @@
 package com.pht.kotlinstudy.controller
 
+import com.pht.kotlinstudy.Global
 import com.pht.kotlinstudy.model.GlobalProperty
 import com.pht.kotlinstudy.model.Message
 import com.pht.kotlinstudy.model.Property
@@ -31,7 +32,7 @@ class SettingController(
         if (interval < 10) {
             interval = 30
         }
-        val intervalSetting = globalPropertyRepository.findByKey("interval").orElse(GlobalProperty())
+        val intervalSetting = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(GlobalProperty())
 
         if (scheduleTaskService.isRunning() && interval.toString() != intervalSetting.value) {
             scheduleTaskService.stopSendMessageTask()
@@ -39,8 +40,8 @@ class SettingController(
         }
 
         if (intervalSetting.id == null) {
-            intervalSetting.key = "interval"
-            intervalSetting.name = "Interval"
+            intervalSetting.key = Global.KEY_INTERVAL
+            intervalSetting.name = Global.KEY_INTERVAL
             intervalSetting.value = Objects.toString(interval)
         } else {
             intervalSetting.value = Objects.toString(interval)
@@ -64,7 +65,7 @@ class SettingController(
     @PostMapping("global/onOff")
     fun onOffSetting(@RequestBody request: GlobalSettingDto.Request): GlobalSettingDto.Response {
         val onOff = request.onOff
-        val intervalSetting = globalPropertyRepository.findByKey("interval").orElse(GlobalProperty())
+        val intervalSetting = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(GlobalProperty())
 
         val serverStatusValue = if (onOff == GlobalProperty.OnOff.ON) {
             if (!scheduleTaskService.isRunning()) {
@@ -86,11 +87,54 @@ class SettingController(
         return GlobalSettingDto.Response(true, serverStatusValue, onOff)
     }
 
+    @PostMapping("global/userInfo")
+    fun userInfoSetting(@RequestBody request: GlobalSettingDto.Request): GlobalSettingDto.Response {
+        val senderId = request.senderId
+        val token = request.token;
+
+
+        val senderIdProperty = globalPropertyRepository.findByKey(Global.KEY_SENDER_ID).orElse(GlobalProperty())
+        val tokenProperty = globalPropertyRepository.findByKey(Global.KEY_ACCESS_TOKEN).orElse(GlobalProperty())
+
+        if (senderIdProperty.id == null) {
+            senderIdProperty.key = Global.KEY_SENDER_ID
+            senderIdProperty.name = Global.KEY_SENDER_ID
+            senderIdProperty.value = senderId
+        } else {
+            senderIdProperty.value = senderId
+        }
+
+        globalPropertyRepository.save(senderIdProperty)
+
+        if (tokenProperty.id == null) {
+            tokenProperty.key = Global.KEY_ACCESS_TOKEN
+            tokenProperty.name = Global.KEY_ACCESS_TOKEN
+            tokenProperty.value = token
+        } else {
+            tokenProperty.value = token
+        }
+
+        globalPropertyRepository.save(tokenProperty)
+
+        val onOff: GlobalProperty.OnOff
+        val serverStatus: GlobalProperty.ServerStatus;
+        if (scheduleTaskService.isRunning()) {
+            serverStatus = GlobalProperty.ServerStatus.RUNNING
+            onOff = GlobalProperty.OnOff.ON
+        } else {
+            serverStatus = GlobalProperty.ServerStatus.STOP
+            onOff = GlobalProperty.OnOff.OFF
+        }
+
+        return GlobalSettingDto.Response(true, serverStatus, onOff)
+    }
+
     @PostMapping("message")
     fun messageSetting(@RequestBody request: MessageDto.Request): MessageDto.Response {
         val messageValue = request.message
         val propertyValue = request.propertyValue
         val propertyType = request.propertyType
+        val title = request.title
 
         println("message : $messageValue")
         println("propertyValue: $propertyValue")
@@ -105,12 +149,13 @@ class SettingController(
             propertyRepository.save(property)
 
             message.key = Objects.toString(propertyType)
-            message.title = "$propertyType Message"
+            message.title = title
             message.message = messageValue
             message.addProperty(property)
             messageRepository.save(message)
         } else {
             message.message = messageValue
+            message.title = title
             message.properties.forEach { property: Property ->
                 run {
                     property.value = propertyValue
