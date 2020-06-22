@@ -30,6 +30,7 @@ class SendMessageTask(
     private val getMethod: String = "/user/rx/all/count/createdAt"
     private val sendMethod: String = "/message/send"
     private val objectMapper = ObjectMapper()
+    private val sendMessageQueue = mutableListOf<Map<String, Any?>>()
 
     private var stopWatch: StopWatch
 
@@ -61,15 +62,17 @@ class SendMessageTask(
             formData["messageTitle"] = title
             formData["messageContent"] = content
 
-            val webClient = WebClient.create("${baseUrl}${sendMethod}")
-            webClient.post()
-                    .header("advAccessTokenId", fromUserId)
-                    .header("advAccessTokenKey", token)
-                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                    .accept(MediaType.APPLICATION_JSON)
-                    .bodyValue(objectMapper.writeValueAsString(formData))
-                    .retrieve().bodyToMono(String::class.java).log()
-                    .subscribe()
+            sendMessageQueue.add(formData)
+
+//            val webClient = WebClient.create("${baseUrl}${sendMethod}")
+//            webClient.post()
+//                    .header("advAccessTokenId", fromUserId)
+//                    .header("advAccessTokenKey", token)
+//                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+//                    .accept(MediaType.APPLICATION_JSON)
+//                    .bodyValue(objectMapper.writeValueAsString(formData))
+//                    .retrieve().bodyToMono(String::class.java).log()
+//                    .subscribe()
         }
     }
 
@@ -90,6 +93,25 @@ class SendMessageTask(
             dayProperty.value?.toLong()
         }
 
+        val senderIdValue = if (environment.activeProfiles.contains("prod")) {
+            senderId.value
+        } else {
+            "06c39309-62b3-4d7c-bc92-ad4d821b79ea"
+        }
+
+        if (sendMessageQueue.isNotEmpty()) {
+            val webClient = WebClient.create("${baseUrl}${sendMethod}/many")
+            webClient.post()
+                    .header("advAccessTokenId", senderIdValue)
+                    .header("advAccessTokenKey", token.value)
+                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
+                    .accept(MediaType.APPLICATION_JSON)
+                    .bodyValue(objectMapper.writeValueAsString(sendMessageQueue))
+                    .retrieve().bodyToMono(String::class.java)
+                    .block()
+            sendMessageQueue.clear()
+        }
+
         val countProperty = countMessage.properties[0]
         val moneyProperty = moneyMessage.properties[0]
 
@@ -102,14 +124,14 @@ class SendMessageTask(
         val webClient = WebClient.builder()
                 .baseUrl(url)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-                .defaultHeader("advAccessTokenId", senderId.value)
+                .defaultHeader("advAccessTokenId", senderIdValue)
                 .defaultHeader("advAccessTokenKey", token.value)
                 .build()
         webClient.get()
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .retrieve().bodyToFlux(BetCount::class.java)
                 .log()
-                .subscribe(Consumer { betCount -> sendMessage(token.value, senderId.value, betCount.userId, countMessage.title, countMessage.message, PropertyType.COUNT, Objects.toString(betCount.count)) })
+                .subscribe(Consumer { betCount -> sendMessage(token.value, senderIdValue, betCount.userId, countMessage.title, countMessage.message, PropertyType.COUNT, Objects.toString(betCount.count)) })
 
         println("send message : ${stopWatch.totalTimeSeconds}s")
         println("Get method : $getMethod")

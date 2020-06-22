@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.pht"
-version = "0.0.1-SNAPSHOT"
+version = "0.0.3"
 java.sourceCompatibility = JavaVersion.VERSION_13
 
 configurations {
@@ -45,11 +45,11 @@ dependencies {
     runtimeOnly("com.h2database:h2")
     annotationProcessor("org.springframework.boot:spring-boot-configuration-processor")
 
-    compileOnly("org.webjars.npm:bootstrap:4.5.0")
-    compileOnly("org.webjars.npm:jquery:3.5.1")
-    compileOnly("org.webjars.npm:popper.js:1.16.1-lts")
-    compileOnly("org.webjars.npm:moment:2.26.0")
-    compileOnly("org.webjars.npm:lodash:4.17.15")
+    implementation("org.webjars.npm:bootstrap:4.5.0")
+    implementation("org.webjars.npm:jquery:3.5.1")
+    implementation("org.webjars.npm:popper.js:1.16.1-lts")
+    implementation("org.webjars.npm:moment:2.26.0")
+    implementation("org.webjars.npm:lodash:4.17.15")
 
     testImplementation("org.springframework.boot:spring-boot-starter-test") {
         exclude(group = "org.junit.vintage", module = "junit-vintage-engine")
