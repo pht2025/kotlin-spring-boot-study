@@ -39,6 +39,21 @@ create table PROPERTY
     updated    timestamp,
     primary key (id)
 );
+
+create table SEND_HISTORY
+(
+    id              bigint        not null,
+    condition_type  varchar(255)  not null,
+    condition_value varchar(255)  not null,
+    created         timestamp,
+    from_user_id    varchar(255)  not null,
+    message_content varchar(1024) not null,
+    message_title   varchar(255),
+    to_user_id      varchar(255)  not null,
+    updated         timestamp,
+    primary key (id)
+);
+
 alter table PROPERTY
     add constraint FK2unehkx69go0sj92j1fs22r1w foreign key (message_id) references message;
 
@@ -52,6 +67,8 @@ INSERT INTO GLOBAL_PROPERTY (ID, CREATED, DESC, KEY, NAME, UPDATED, VALUE)
 VALUES (3, '2020-06-11 23:53:48.967000', null, 'senderId', 'Sender Id', '2020-06-11 23:53:48.967000', 'f5baedec-e6d9-4ae2-80db-c33ef7714e04');
 INSERT INTO GLOBAL_PROPERTY (ID, CREATED, DESC, KEY, NAME, UPDATED, VALUE)
 VALUES (4, '2020-06-11 23:53:48.967000', null, 'accessToken', 'Sender Id', '2020-06-11 23:53:48.967000', 'C75283491EE20CD61164C98D8D096A29C3698804010A5F417750BD6CA5B7B760');
+INSERT INTO GLOBAL_PROPERTY (ID, CREATED, DESC, KEY, NAME, UPDATED, VALUE)
+VALUES (5, '2020-06-11 23:53:48.967000', null, 'dayBefore', 'Day Before', '2020-06-11 23:53:48.967000', '10');
 
 INSERT INTO MESSAGE (ID, CREATED, KEY, MESSAGE, TITLE, UPDATED)
 VALUES (4, '2020-06-10 22:00:53.165000', 'COUNT', 'COUNT Message

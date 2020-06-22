@@ -25,6 +25,7 @@ class IndexController(
         val interval = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(GlobalProperty())
         val senderId = globalPropertyRepository.findByKey(Global.KEY_SENDER_ID).orElse(GlobalProperty())
         val accessToken = globalPropertyRepository.findByKey(Global.KEY_ACCESS_TOKEN).orElse(GlobalProperty())
+        val dayBefore = globalPropertyRepository.findByKey(Global.KEY_DAY_BEFORE).orElse(GlobalProperty())
         val countMessage = messageRepository.findByKey(PropertyType.COUNT.name).orElse(Message())
         val moneyMessage = messageRepository.findByKey(PropertyType.MONEY.name).orElse(Message())
         val countProperty = if (countMessage.properties.isEmpty()) {
@@ -55,7 +56,7 @@ class IndexController(
         modelAndView.addObject("onOff", onOff.name)
         modelAndView.addObject("senderId", senderId.value)
         modelAndView.addObject("accessToken", accessToken.value)
-
+        modelAndView.addObject("dayBefore", dayBefore.value)
 
         modelAndView.addObject("countMessageId", countMessage.id)
         modelAndView.addObject("moneyMessageId", moneyMessage.id)

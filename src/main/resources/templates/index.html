@@ -70,7 +70,7 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text">ID</span>
                 </div>
-                <input id="senderId" name="senderId" type="text" class="form-control" aria-label="Count" aria-describedby="basic-sender-id" th:value="${senderId}">
+                <input id="senderId" name="senderId" type="text" class="form-control" aria-label="SenderId" aria-describedby="basic-sender-id" th:value="${senderId}">
             </div>
         </div>
         <div class="col-lg-6">
@@ -78,12 +78,20 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text">Token</span>
                 </div>
-                <input id="accessToken" name="token" type="text" class="form-control" aria-label="Count" aria-describedby="basic-token" th:value="${accessToken}">
+                <input id="accessToken" name="token" type="text" class="form-control" aria-label="Token" aria-describedby="basic-token" th:value="${accessToken}">
             </div>
         </div>
-        <div class="col-lg-12">
+        <div class="col-lg-6">
+            <div class="input-group mb-3">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Day</span>
+                </div>
+                <input id="dayBefore" name="token" type="text" class="form-control" aria-label="DayBefore" aria-describedby="basic-day-before" th:value="${dayBefore}">
+            </div>
+        </div>
+        <div class="col-lg-6">
             <div class="text-center">
-                <button class="btn btn-success" onclick="setUserInfo()">저장</button>
+                <button class="btn btn-success" onclick="setUserInfo()">SAVE</button>
             </div>
         </div>
     </div>
@@ -250,11 +258,12 @@
   function setUserInfo() {
     const senderId = $('#senderId').val()
     const token = $('#accessToken').val()
+    const day = $('#dayBefore').val()
     $.ajax({
       url: 'setting/global/userInfo',
       type: 'POST',
       dataType: 'json',
-      data: JSON.stringify({ senderId, token }),
+      data: JSON.stringify({ senderId, token, day }),
       contentType: 'application/json',
     }).done((response) => {
       console.log('response', response)

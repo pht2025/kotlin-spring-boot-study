@@ -91,10 +91,12 @@ class SettingController(
     fun userInfoSetting(@RequestBody request: GlobalSettingDto.Request): GlobalSettingDto.Response {
         val senderId = request.senderId
         val token = request.token;
+        val day = request.day;
 
 
         val senderIdProperty = globalPropertyRepository.findByKey(Global.KEY_SENDER_ID).orElse(GlobalProperty())
         val tokenProperty = globalPropertyRepository.findByKey(Global.KEY_ACCESS_TOKEN).orElse(GlobalProperty())
+        val dayProperty = globalPropertyRepository.findByKey(Global.KEY_DAY_BEFORE).orElse(GlobalProperty())
 
         if (senderIdProperty.id == null) {
             senderIdProperty.key = Global.KEY_SENDER_ID
@@ -115,6 +117,16 @@ class SettingController(
         }
 
         globalPropertyRepository.save(tokenProperty)
+
+        if (dayProperty.id == null) {
+            dayProperty.key = Global.KEY_DAY_BEFORE
+            dayProperty.name = Global.KEY_DAY_BEFORE
+            dayProperty.value = day
+        } else {
+            dayProperty.value = day
+        }
+
+        globalPropertyRepository.save(dayProperty)
 
         val onOff: GlobalProperty.OnOff
         val serverStatus: GlobalProperty.ServerStatus;
