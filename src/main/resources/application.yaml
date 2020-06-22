@@ -23,3 +23,4 @@ logging:
   file:
     path: .
     name: kotlin-study.log
+    max-size: 20MB

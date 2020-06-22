@@ -6,6 +6,7 @@ import com.pht.kotlinstudy.model.*
 import com.pht.kotlinstudy.repository.GlobalPropertyRepository
 import com.pht.kotlinstudy.repository.MessageRepository
 import com.pht.kotlinstudy.repository.SendHistoryRepository
+import org.springframework.core.env.Environment
 import org.springframework.http.HttpHeaders
 import org.springframework.http.MediaType
 import org.springframework.util.StopWatch
@@ -19,11 +20,13 @@ import java.util.function.Consumer
 class SendMessageTask(
         private val messageRepository: MessageRepository,
         private val globalPropertyRepository: GlobalPropertyRepository,
-        private val sendHistoryRepository: SendHistoryRepository
+        private val sendHistoryRepository: SendHistoryRepository,
+        private var environment: Environment
 ) : Runnable {
 
     private val testBaseUrl: String = "http://localhost:8088"
-    private val baseUrl: String = "https://v2-api.adventurer.co.kr"
+    private val prodBaseUrl: String = "https://v2-api.adventurer.co.kr"
+    private val baseUrl: String
     private val getMethod: String = "/user/rx/all/count/createdAt"
     private val sendMethod: String = "/message/send"
     private val objectMapper = ObjectMapper()
@@ -31,6 +34,11 @@ class SendMessageTask(
     private var stopWatch: StopWatch
 
     init {
+        baseUrl = if (environment.activeProfiles.contains("prod")) {
+            prodBaseUrl
+        } else {
+            testBaseUrl
+        }
         stopWatch = StopWatch("sendMessage")
         stopWatch.start()
     }
