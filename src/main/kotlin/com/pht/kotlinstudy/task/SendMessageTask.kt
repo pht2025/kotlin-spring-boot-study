@@ -27,10 +27,11 @@ class SendMessageTask(
     private val testBaseUrl: String = "http://localhost:8088"
     private val prodBaseUrl: String = "https://v2-api.adventurer.co.kr"
     private val baseUrl: String
-    private val getMethod: String = "/user/rx/all/count/createdAt"
-    private val sendMethod: String = "/message/send"
+    private val getMethod: String = "/user/rx/betCounts"
+    private val sendMethod: String = "/message/send/many"
     private val objectMapper = ObjectMapper()
     private val sendMessageQueue = mutableListOf<Map<String, Any?>>()
+    private val historyMap = mutableMapOf<String, SendHistory>()
 
     private var stopWatch: StopWatch
 
@@ -46,7 +47,7 @@ class SendMessageTask(
 
     private fun sendMessage(token: String?, fromUserId: String?, toUserId: String?, title: String?, content: String?, type: PropertyType?, value: String?) {
         val findByToUserIdAndConditionValue = sendHistoryRepository.findByToUserIdAndConditionValue(toUserId, value)
-        if (findByToUserIdAndConditionValue?.id == null) {
+        if (findByToUserIdAndConditionValue?.id == null && (sendMessageQueue.isEmpty() || sendMessageQueue.size < 50)) {
             val sendHistory = SendHistory()
             sendHistory.fromUserId = fromUserId
             sendHistory.toUserId = toUserId
@@ -54,6 +55,7 @@ class SendMessageTask(
             sendHistory.messageContent = content
             sendHistory.conditionType = type
             sendHistory.conditionValue = value
+            historyMap["${fromUserId}${toUserId}${value}"] = sendHistory
             sendHistoryRepository.save(sendHistory)
 
             val formData = HashMap<String, Any?>()
@@ -63,16 +65,6 @@ class SendMessageTask(
             formData["messageContent"] = content
 
             sendMessageQueue.add(formData)
-
-//            val webClient = WebClient.create("${baseUrl}${sendMethod}")
-//            webClient.post()
-//                    .header("advAccessTokenId", fromUserId)
-//                    .header("advAccessTokenKey", token)
-//                    .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
-//                    .accept(MediaType.APPLICATION_JSON)
-//                    .bodyValue(objectMapper.writeValueAsString(formData))
-//                    .retrieve().bodyToMono(String::class.java).log()
-//                    .subscribe()
         }
     }
 
@@ -100,15 +92,16 @@ class SendMessageTask(
         }
 
         if (sendMessageQueue.isNotEmpty()) {
-            val webClient = WebClient.create("${baseUrl}${sendMethod}/many")
+            val webClient = WebClient.create("${baseUrl}${sendMethod}")
             webClient.post()
                     .header("advAccessTokenId", senderIdValue)
                     .header("advAccessTokenKey", token.value)
                     .header(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                     .accept(MediaType.APPLICATION_JSON)
                     .bodyValue(objectMapper.writeValueAsString(sendMessageQueue))
-                    .retrieve().bodyToMono(String::class.java)
-                    .block()
+                    .retrieve().bodyToMono(List::class.java)
+                    .log()
+                    .subscribe()
             sendMessageQueue.clear()
         }
 
@@ -119,18 +112,16 @@ class SendMessageTask(
         val beforeDay = today.minusDays(minusDay!!)
         val createdAt = beforeDay.format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss"))
 
-        val url = "${baseUrl}${getMethod}?counts=${countProperty.value}&createdAt=${createdAt}"
+        val url = "${baseUrl}${getMethod}/${countProperty.value}/${createdAt}"
         println("Parsed url : $url")
         val webClient = WebClient.builder()
                 .baseUrl(url)
-                .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader("advAccessTokenId", senderIdValue)
                 .defaultHeader("advAccessTokenKey", token.value)
                 .build()
         webClient.get()
                 .accept(MediaType.TEXT_EVENT_STREAM)
                 .retrieve().bodyToFlux(BetCount::class.java)
-                .log()
                 .subscribe(Consumer { betCount -> sendMessage(token.value, senderIdValue, betCount.userId, countMessage.title, countMessage.message, PropertyType.COUNT, Objects.toString(betCount.count)) })
 
         println("send message : ${stopWatch.totalTimeSeconds}s")
