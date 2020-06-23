@@ -27,8 +27,8 @@ class SendMessageTask(
     private val testBaseUrl: String = "http://localhost:8088"
     private val prodBaseUrl: String = "https://v2-api.adventurer.co.kr"
     private val baseUrl: String
-    private val getMethod: String = "/user/rx/betCounts"
-    private val sendMethod: String = "/message/send/many"
+    private val getMethod: String = "/api/v2/user/rx/betCounts"
+    private val sendMethod: String = "/api/v2/message/send/many"
     private val objectMapper = ObjectMapper()
     private val sendMessageQueue = mutableListOf<Map<String, Any?>>()
     private val historyMap = mutableMapOf<String, SendHistory>()
