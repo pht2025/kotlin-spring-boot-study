@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.pht"
-version = "0.0.5"
+version = "0.0.6"
 java.sourceCompatibility = JavaVersion.VERSION_13
 
 configurations {
