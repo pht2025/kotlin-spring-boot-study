@@ -86,7 +86,8 @@
                 <div class="input-group-prepend">
                     <span class="input-group-text">Day</span>
                 </div>
-                <input id="dayBefore" name="token" type="text" class="form-control" aria-label="DayBefore" aria-describedby="basic-day-before" th:value="${dayBefore}">
+                <input id="dayBefore" name="token" type="number" min="1" max="60" step="1" class="form-control" aria-label="DayBefore" aria-describedby="basic-day-before"
+                       th:value="${dayBefore}">
             </div>
         </div>
         <div class="col-lg-6">
@@ -209,11 +210,15 @@
 
   function setInterval() {
     const $interval = $('#interval')
+    const interval = $interval.val()
+    if (_.isEmpty(interval)) {
+      return false
+    }
     $.ajax({
       url: 'setting/global/interval',
       type: 'POST',
       dataType: 'json',
-      data: JSON.stringify({ interval: $interval.val() }),
+      data: JSON.stringify({ interval }),
       contentType: 'application/json',
     }).done((response) => {
       console.log('response', response)
@@ -258,7 +263,10 @@
   function setUserInfo() {
     const senderId = $('#senderId').val()
     const token = $('#accessToken').val()
-    const day = $('#dayBefore').val()
+    let day = $('#dayBefore').val()
+    if (_.isNil(day) || day === '' || Number(day) > 60) {
+      day = 60
+    }
     $.ajax({
       url: 'setting/global/userInfo',
       type: 'POST',

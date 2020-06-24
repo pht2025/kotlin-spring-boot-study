@@ -30,7 +30,7 @@ class SettingController(
     fun intervalSetting(@RequestBody request: GlobalSettingDto.Request): GlobalSettingDto.Response {
         var interval = request.interval
         if (interval < 10) {
-            interval = 30
+            interval = 10
         }
         val intervalSetting = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(GlobalProperty())
 
@@ -42,10 +42,8 @@ class SettingController(
         if (intervalSetting.id == null) {
             intervalSetting.key = Global.KEY_INTERVAL
             intervalSetting.name = Global.KEY_INTERVAL
-            intervalSetting.value = Objects.toString(interval)
-        } else {
-            intervalSetting.value = Objects.toString(interval)
         }
+        intervalSetting.value = Objects.toString(interval)
 
         globalPropertyRepository.save(intervalSetting)
 
@@ -66,11 +64,20 @@ class SettingController(
     fun onOffSetting(@RequestBody request: GlobalSettingDto.Request): GlobalSettingDto.Response {
         val onOff = request.onOff
         val intervalSetting = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(GlobalProperty())
+        val onOffSetting = globalPropertyRepository.findByKey(Global.KEY_ON_OFF).orElse(GlobalProperty())
+
+        if (onOffSetting.id == null) {
+            onOffSetting.key = Global.KEY_ON_OFF
+            onOffSetting.name = Global.KEY_ON_OFF
+            onOffSetting.value = onOff.name
+        }
+        onOffSetting.value = onOff.name
+        globalPropertyRepository.save(onOffSetting)
 
         val serverStatusValue = if (onOff == GlobalProperty.OnOff.ON) {
             if (!scheduleTaskService.isRunning()) {
-                val interval = if (intervalSetting == null) {
-                    60L
+                val interval = if (intervalSetting.id == null) {
+                    30L
                 } else {
                     intervalSetting.value?.toLong()
                 }
@@ -82,7 +89,12 @@ class SettingController(
             GlobalProperty.ServerStatus.STOP
         }
 
-        globalPropertyRepository.save(intervalSetting)
+        if (intervalSetting.id == null) {
+            intervalSetting.key = Global.KEY_INTERVAL
+            intervalSetting.name = Global.KEY_INTERVAL
+            intervalSetting.value = "30"
+            globalPropertyRepository.save(intervalSetting)
+        }
 
         return GlobalSettingDto.Response(true, serverStatusValue, onOff)
     }
@@ -91,8 +103,11 @@ class SettingController(
     fun userInfoSetting(@RequestBody request: GlobalSettingDto.Request): GlobalSettingDto.Response {
         val senderId = request.senderId
         val token = request.token;
-        val day = request.day;
+        var day = request.day;
 
+        if (day > 30) {
+            day = 30
+        }
 
         val senderIdProperty = globalPropertyRepository.findByKey(Global.KEY_SENDER_ID).orElse(GlobalProperty())
         val tokenProperty = globalPropertyRepository.findByKey(Global.KEY_ACCESS_TOKEN).orElse(GlobalProperty())
@@ -101,30 +116,24 @@ class SettingController(
         if (senderIdProperty.id == null) {
             senderIdProperty.key = Global.KEY_SENDER_ID
             senderIdProperty.name = Global.KEY_SENDER_ID
-            senderIdProperty.value = senderId
-        } else {
-            senderIdProperty.value = senderId
         }
+        senderIdProperty.value = senderId
 
         globalPropertyRepository.save(senderIdProperty)
 
         if (tokenProperty.id == null) {
             tokenProperty.key = Global.KEY_ACCESS_TOKEN
             tokenProperty.name = Global.KEY_ACCESS_TOKEN
-            tokenProperty.value = token
-        } else {
-            tokenProperty.value = token
         }
+        tokenProperty.value = token
 
         globalPropertyRepository.save(tokenProperty)
 
         if (dayProperty.id == null) {
             dayProperty.key = Global.KEY_DAY_BEFORE
             dayProperty.name = Global.KEY_DAY_BEFORE
-            dayProperty.value = day
-        } else {
-            dayProperty.value = day
         }
+        dayProperty.value = day.toString()
 
         globalPropertyRepository.save(dayProperty)
 

@@ -21,7 +21,9 @@ class ApplicationEventListener(
 ) : ApplicationListener<ApplicationStartedEvent> {
 
     override fun onApplicationEvent(event: ApplicationStartedEvent) {
-        var interval = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(null)
+        val interval = globalPropertyRepository.findByKey(Global.KEY_INTERVAL).orElse(null)
+        val day = globalPropertyRepository.findByKey(Global.KEY_DAY_BEFORE).orElse(null)
+        val onOff = globalPropertyRepository.findByKey(Global.KEY_ON_OFF).orElse(null)
         var countMessage = messageRepository.findByKey(PropertyType.COUNT.name).orElse(null)
         var moneyMessage = messageRepository.findByKey(PropertyType.MONEY.name).orElse(null)
 
@@ -29,8 +31,22 @@ class ApplicationEventListener(
             val intervalProperty = GlobalProperty()
             intervalProperty.key = Global.KEY_INTERVAL
             intervalProperty.name = Global.KEY_INTERVAL
-            intervalProperty.value = "60"
-            interval = globalPropertyRepository.save(intervalProperty)
+            intervalProperty.value = "30"
+            globalPropertyRepository.save(intervalProperty)
+        }
+        if (day == null) {
+            val dayProperty = GlobalProperty()
+            dayProperty.key = Global.KEY_DAY_BEFORE
+            dayProperty.name = Global.KEY_DAY_BEFORE
+            dayProperty.value = "5"
+            globalPropertyRepository.save(dayProperty)
+        }
+        if (onOff == null) {
+            val onOffProperty = GlobalProperty()
+            onOffProperty.key = Global.KEY_DAY_BEFORE
+            onOffProperty.name = Global.KEY_DAY_BEFORE
+            onOffProperty.value = GlobalProperty.OnOff.OFF.name
+            globalPropertyRepository.save(onOffProperty)
         }
 
         if (countMessage == null) {
@@ -62,6 +78,8 @@ class ApplicationEventListener(
             messageRepository.save(moneyMessage)
         }
 
-        scheduleTaskService.startSendMessageTask(Duration.ofSeconds(interval.value?.toLong()!!))
+        if (onOff.value == GlobalProperty.OnOff.ON.name) {
+            scheduleTaskService.startSendMessageTask(Duration.ofSeconds(interval.value?.toLong()!!))
+        }
     }
 }
