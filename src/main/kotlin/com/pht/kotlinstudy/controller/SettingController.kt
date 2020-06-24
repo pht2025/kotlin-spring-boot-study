@@ -100,7 +100,7 @@ class SettingController(
     }
 
     @PostMapping("global/userInfo")
-    fun userInfoSetting(@RequestBody request: GlobalSettingDto.Request): GlobalSettingDto.Response {
+    fun userInfoSetting(@RequestBody request: GlobalSettingDto.UserInfoRequest): GlobalSettingDto.Response {
         val senderId = request.senderId
         val token = request.token;
         var day = request.day;
