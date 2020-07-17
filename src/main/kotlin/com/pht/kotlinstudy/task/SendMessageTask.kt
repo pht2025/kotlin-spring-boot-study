@@ -27,8 +27,8 @@ class SendMessageTask(
     private val testBaseUrl: String = "http://localhost:8088"
     private val prodBaseUrl: String = "https://v2-api.adventurer.co.kr"
     private val baseUrl: String
-    private val getMethod: String = "/api/v2/user/rx/betCounts"
-    private val sendMethod: String = "/api/v2/message/send/many"
+    private val getMethod: String = "/v2/user/rx/betCounts"
+    private val sendMethod: String = "/v2/message/send/many"
     private val objectMapper = ObjectMapper()
     private val sendMessageQueue = mutableListOf<Map<String, Any?>>()
     private val historyMap = mutableMapOf<String, SendHistory>()
@@ -120,7 +120,7 @@ class SendMessageTask(
                 .defaultHeader("advAccessTokenKey", token.value)
                 .build()
         webClient.get()
-                .accept(MediaType.TEXT_EVENT_STREAM)
+                .accept(MediaType.APPLICATION_JSON)
                 .retrieve().bodyToFlux(BetCount::class.java)
                 .subscribe(Consumer { betCount -> sendMessage(token.value, senderIdValue, betCount.userId, countMessage.title, countMessage.message, PropertyType.COUNT, Objects.toString(betCount.count)) })
 
