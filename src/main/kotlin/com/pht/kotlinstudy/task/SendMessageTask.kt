@@ -22,7 +22,7 @@ class SendMessageTask(
         private var environment: Environment
 ) : Runnable {
 
-    private val testBaseUrl: String = "http://localhost:7777"
+    private val testBaseUrl: String = "http://localhost:8088"
     private val prodBaseUrl: String = "https://v2-api.adventurer.co.kr"
     private val baseUrl: String
     private val getCountMethod: String = "/api/user/betCounts"
