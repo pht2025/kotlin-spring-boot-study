@@ -27,4 +27,4 @@ logging:
     rollingpolicy:
       max-file-size: 20MB
 server:
-  port: 7778
+  port: 8080
