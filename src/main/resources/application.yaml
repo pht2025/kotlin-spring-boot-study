@@ -23,4 +23,8 @@ logging:
   file:
     path: .
     name: kotlin-study.log
-    max-size: 20MB
+  logback:
+    rollingpolicy:
+      max-file-size: 20MB
+server:
+  port: 7778

@@ -165,6 +165,7 @@ class SettingController(
         if (message.id == null) {
             val property = Property()
             property.key = Objects.toString(propertyType)
+            property.name = Objects.toString(propertyType)
             property.type = propertyType
             property.value = propertyValue
             propertyRepository.save(property)

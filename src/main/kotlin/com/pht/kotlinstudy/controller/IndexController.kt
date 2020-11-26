@@ -28,6 +28,7 @@ class IndexController(
         val dayBefore = globalPropertyRepository.findByKey(Global.KEY_DAY_BEFORE).orElse(GlobalProperty())
         val countMessage = messageRepository.findByKey(PropertyType.COUNT.name).orElse(Message())
         val moneyMessage = messageRepository.findByKey(PropertyType.MONEY.name).orElse(Message())
+        val newUserMessage = messageRepository.findByKey(PropertyType.NEW_USER.name).orElse(Message())
         val countProperty = if (countMessage.properties.isEmpty()) {
             Property()
         } else {
@@ -37,6 +38,11 @@ class IndexController(
             Property()
         } else {
             moneyMessage.properties[0]
+        }
+        val newUserProperty = if (newUserMessage.properties.isEmpty()) {
+            Property()
+        } else {
+            newUserMessage.properties[0]
         }
 
         modelAndView.viewName = "index"
@@ -60,15 +66,19 @@ class IndexController(
 
         modelAndView.addObject("countMessageId", countMessage.id)
         modelAndView.addObject("moneyMessageId", moneyMessage.id)
+        modelAndView.addObject("newUserMessageId", newUserMessage.id)
 
         modelAndView.addObject("countMessageTitle", countMessage.title)
         modelAndView.addObject("moneyMessageTitle", moneyMessage.title)
+        modelAndView.addObject("newUserMessageTitle", newUserMessage.title)
 
         modelAndView.addObject("countMessage", countMessage.message)
         modelAndView.addObject("moneyMessage", moneyMessage.message)
+        modelAndView.addObject("newUserMessage", newUserMessage.message)
 
         modelAndView.addObject("countProperty", countProperty.value)
         modelAndView.addObject("moneyProperty", moneyProperty.value)
+        modelAndView.addObject("newUserProperty", newUserProperty.value)
         return Mono.just(modelAndView)
     }
 }

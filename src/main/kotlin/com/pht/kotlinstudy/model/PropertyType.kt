@@ -1,5 +1,5 @@
 package com.pht.kotlinstudy.model
 
 enum class PropertyType {
-    COUNT, MONEY
+    COUNT, MONEY, NEW_USER,
 }

@@ -5,5 +5,5 @@ import org.springframework.data.repository.CrudRepository
 
 interface SendHistoryRepository : CrudRepository<SendHistory, Long> {
 
-    fun findByToUserIdAndConditionValue(toUserId: String?, count: String?): SendHistory?
+    fun findByToUserIdAndConditionValue(toUserId: String?, conditionValue: String?): SendHistory?
 }

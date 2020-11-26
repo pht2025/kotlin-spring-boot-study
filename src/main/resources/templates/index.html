@@ -99,7 +99,7 @@
     <div class="row">
         <div class="col-lg-6 text-center mt-2">
             <div class="card">
-                <div class="card-header">Message setting</div>
+                <div class="card-header">Count Message setting</div>
                 <div class="card-body">
                     <form>
                         <div class="form-group">
@@ -135,7 +135,7 @@
         </div>
         <div class="col-lg-6 text-center mt-2">
             <div class="card">
-                <div class="card-header">Message setting</div>
+                <div class="card-header">Money Message setting</div>
                 <div class="card-body">
                     <form>
                         <div class="form-group">
@@ -169,6 +169,47 @@
                 </div>
             </div>
         </div>
+        <div class="col-lg-12 text-center mt-2">
+            <div class="card">
+                <div class="card-header">New user Message setting</div>
+                <div class="card-body">
+                    <form>
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Title</span>
+                                </div>
+                                <input name="title" type="text" class="form-control" aria-label="Title" th:value="${newUserMessageTitle}">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group mb-3">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text">Message</span>
+                                </div>
+                                <textarea name="message" class="form-control" aria-label="Message" style="height:250px;">[[${newUserMessage}]]</textarea>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="input-group">
+                                <div class="input-group-prepend">
+                                    <span class="input-group-text" id="basic-new-user">Only today</span>
+                                </div>
+                                <div class="form-control border p-0">
+                                    <input id="new-money-checkbox" name="propertyValue" type="checkbox"
+                                           class="form-control" aria-label="Today" aria-describedby="basic-new-user"
+                                           th:valuetype="Boolean"
+                                           th:checked="${newUserProperty}">
+                                </div>
+                            </div>
+                        </div>
+                        <input name="messageId" type="hidden" th:value="${newUserMessageId}">
+                        <input name="propertyType" type="hidden" value="NEW_USER">
+                        <button type="button" class="btn btn-primary" onclick="onSubmitMessageForm(this)">SAVE</button>
+                    </form>
+                </div>
+            </div>
+        </div>
     </div>
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
@@ -193,8 +234,8 @@
 <script src="/webjars/jquery/3.5.1/dist/jquery.min.js"></script>
 <script src="/webjars/popper.js/1.16.1-lts/dist/umd/popper.min.js"></script>
 <script src="/webjars/bootstrap/4.5.0/dist/js/bootstrap.min.js"></script>
-<script src="/webjars/moment/2.26.0/min/moment-with-locales.min.js"></script>
-<script src="/webjars/lodash/4.17.15/lodash.min.js"></script>
+<script src="/webjars/moment/2.29.1/min/moment-with-locales.min.js"></script>
+<script src="/webjars/lodash/4.17.20/lodash.min.js"></script>
 <script>
   function changeServerStatus(serverStatus) {
     console.log('server status')
@@ -285,22 +326,24 @@
 
   function onSubmitMessageForm(buttonElem) {
     const formElem = $(buttonElem).parent('form')[0]
+    const { title, message, propertyValue, propertyType } = formElem
+    const type = _.replace(propertyType.value, /\s/g, '')
+    const value = (type === 'NEW_USER') ? propertyValue.checked : _.replace(propertyValue.value, /\s/g, '')
     console.log('formElem', formElem)
-    console.log(`onSubmit : Message = ${formElem['message'].value}, Property = ${formElem['propertyValue'].value}, PropertyType = ${formElem['propertyType'].value}`)
-
+    console.log(`onSubmit : Title = ${title.value}, Message = ${message.value}, PropertyValue = ${value}, PropertyType = ${type}`)
     $.ajax({
       url: 'setting/message',
       type: 'POST',
       dataType: 'json',
       data: JSON.stringify({
-        title: formElem['title'].value,
-        message: formElem['message'].value,
-        propertyValue: _.replace(formElem['propertyValue'].value, /\s/g, ''),
-        propertyType: _.replace(formElem['propertyType'].value, /\s/g, ''),
+        title: title.value,
+        message: message.value,
+        propertyValue: value,
+        propertyType: type,
       }),
       contentType: 'application/json',
     }).done((response) => {
-      console.log('message setting don', response)
+      console.log('message setting done', response)
     }).fail((error) => {
       console.error('message setting error', error)
       alert(JSON.stringify(error))
